@@ -33,7 +33,7 @@ app.all('*', function(req, res, next){
 });
 
 // just listen.
-server.listen(8000);
+server.listen(8888);
 logger.info('Starting Bikes Server');
 
 function compile(str, path) {
