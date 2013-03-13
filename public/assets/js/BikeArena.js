@@ -12,7 +12,7 @@ var BikeArena = new Class({
 	Prefix: 'client',
 	initialize: function(options) {
 		this.setOptions(options);
-		console.log(Cookie.read('express.sid'))
+		// console.log(Cookie.read('express.sid'))
 		this._form = document.id('enroll');
 		var v = new Form.Validator.Inline(this._form);
 		v.addEvent('onFormValidate', function(validates) { return validates; })
@@ -87,7 +87,6 @@ var BikeArena = new Class({
 		new Element('span', {'class': 'bullet', 'styles': {'border': '2px solid '+p._color}}).inject(li);
 		new Element('span', {'class': 'name', 'html': p._name}).inject(li);
 		if (p._life == 'dead') li.addClass('dead');
-		console.log(p)
 	},
 	_draw: function(payload) {
 
