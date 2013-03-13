@@ -1,0 +1,22 @@
+{
+  "name": "bikes",
+  "description": "hello world",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": ">=3.0.6",
+	"socket.io": ">=0.9.13",
+	"socket.io-client": ">=0.9.11",
+	"stylus": "*",
+	"nib": "*",
+	"jade": "*",
+	"fs": "0.0.0",
+	"connect-redis": "1.4.5",
+	"prime": "0.1.0",
+	"forever": "0.10.0",
+	"winston": "0.6.2",
+	"cookie": "*",
+	"connect": "*",
+	"crypto": "*"
+  }
+}

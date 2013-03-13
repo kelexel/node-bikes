@@ -1,0 +1,21 @@
+!!!5
+html
+  head
+    title #{title} - Bikes!
+    link(rel='stylesheet', href='/assets/css/style.css')
+    block scripts
+      script(src='http://pm/min/g=core_full,raphael')
+      script(src='http://localhost:8000/socket.io/socket.io.js')
+      script(src='/assets/js/BikeSocket.js')
+      script(src='/assets/js/BikeArena.js')
+      script(src='/assets/js/init.js')
+  body
+    header
+      h1 BikeSss!
+    .container
+      .main-content
+        block content
+      .sidebar
+        block sidebar
+    footer
+      p node rocks.
