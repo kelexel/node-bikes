@@ -21,19 +21,34 @@ var BikeArena = new Class({
 	},
 	_setEvents: function() {
 		this._bound = {
-			_eventEnrollClick: this._eventEnrollClick.bind(this),
+			_eventClickEnroll: this._eventClickEnroll.bind(this),
+			_eventClickInsertCoin: this._eventClickInsertCoin.bind(this),
 			_eventKeydown: this._eventKeydown.bind(this),
+			_companyWelcome: this._companyWelcome.bind(this),
 			_companyRedraw: this._companyRedraw.bind(this)
 		}
-		this._form.addEvent('click:relay(button.submit)', this._bound._eventEnrollClick);
+		this._form.addEvent('click:relay(button.submit)', this._bound._eventClickEnroll);
+		document.id('insertCoin').addEvent('click', this._bound._eventClickInsertCoin);
 		window.addEvent('keydown', this._bound._eventKeydown);
+		this.subscribe('client.welcome', this._bound._companyWelcome);
 		this.subscribe('client.redraw', this._bound._companyRedraw);
 	},
-	_eventEnrollClick: function(e, el) {
+	_eventClickEnroll: function(e, el) {
 		e.stop();
-		if (document.id('enroll').validate())
+		var form = document.id('enroll');
+		var insertCoin = document.id('insertCoin');
+		if (form.validate()) {
 			var name = document.id('f_playerName').get('value');
-		_i['socket'] = new BikeSocket({'socketUrl': this.options.socketUrl, 'name': name});
+			_i['socket'] = new BikeSocket({'socketUrl': this.options.socketUrl, 'name': name});
+			form.addClass('hidden');
+			insertCoin.removeClass('hidden');
+		}
+	},
+	_eventClickInsertCoin: function(e, el) {
+		e.stop();
+		// _i['socket'].disconnect();
+		// _i['socket'].connect();
+		this.copublish('emit', ['insertCoin', false, false]);
 	},
 	_eventKeydown: function(e) {
 		if (![37,38,39,40].contains(e.code)) return;
@@ -41,9 +56,12 @@ var BikeArena = new Class({
 		e.stop();
 		this.copublish('emit', ['move', keys[e.code], false]);
 	},
+	_companyWelcome: function(payload) {
+		this._gridLoad(payload);
+		this._playersSet(payload.players);
+	},
 	_companyRedraw: function(payload) {
 		this._playersSet(payload.players);
-		// this._draw(payload.arena);
 	},
 	_gridInit: function() {
 		this._canvas = Raphael(document.id('grid'), this.options.size.x*2+'px', this.options.size.y*2+'px');
@@ -61,7 +79,16 @@ var BikeArena = new Class({
 		this._canvas.renderfix();
 		return this;
 	},
-
+	_gridLoad: function(payload) {
+		Object.each(payload.grid, function(xAxis, y) {
+			Object.each(xAxis, function(id, x) {
+				var p = Object.clone(payload.players[id]);
+				p._coords.x = x;
+				p._coords.y = y;
+				this._injectBike(p);
+			}, this);
+		}, this)
+	},
 	_playersSet: function(players) {
 		Object.each(players, function(p) {
 			if (!p._id) console.log('Invalid p._id!');
@@ -77,7 +104,6 @@ var BikeArena = new Class({
 		if (p._life == 'dead' && this._players[p._id] != 'dead') {
 			this._players[p._id] = 'dead';
 			document.id('players').getElement('li[rel='+p._id+']').addClass('dead');
-			console.log('deadifying')
 		}
 		var fillColor = p._life == 'dead' ? p._color : 'white';
 		return this._canvas.rect(p._coords.x*this.options.cellSize, p._coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor});
