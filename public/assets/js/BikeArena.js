@@ -1,6 +1,7 @@
 var BikeArena = new Class({
 	Implements: [Options, Events, Unit],
 	options: {
+		socketUrl: false,
 		size: {x: 256, y: 256},
 		colorBorders: '#eee',
 		cellSize: 10,
@@ -32,7 +33,7 @@ var BikeArena = new Class({
 		e.stop();
 		if (document.id('enroll').validate())
 			var name = document.id('f_playerName').get('value');
-		_i['socket'] = new BikeSocket({'socketUrl': 'http://localhost:8000/arena', 'name': name});
+		_i['socket'] = new BikeSocket({'socketUrl': this.options.socketUrl, 'name': name});
 	},
 	_eventKeydown: function(e) {
 		if (![37,38,39,40].contains(e.code)) return;
