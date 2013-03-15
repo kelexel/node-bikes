@@ -48,10 +48,10 @@ var BikeSocket = new Class({
 		this._socket.emit(event, payload, callback);
 	},
 	_processWelcome: function(payload) {
-		this.copublish('client.welcome', [payload]);
+		this.copublish('Arena.welcome', [payload]);
 	},
 	_processRefresh: function(payload) {
-		this.copublish('client.redraw', [payload]);
+		this.copublish('Arena.refresh', [payload]);
 	},
 	_debug: function(str, msg) {
 		if (!this.options.debug || !console || !console.log) return;

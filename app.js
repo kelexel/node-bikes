@@ -1,6 +1,15 @@
 // Use with something like:
 //	env NODE_ENV='dev' node app.js
 //	env NODE_ENV='prod' node app.js
+var config = {
+	'url_cdn': 'http://cdn.iconference.new-net.net/min/g=core_full,raphael',
+	'url_socketio': 'http://bikesss.dune.org:8888'
+};
+var _config = {
+	'url_cdn': 'http://cdn.iconference.new-net.net/min/g=core_full,raphael',
+	'url_socketio': 'http://localhost:8888'
+};
+
 
 var express = require('express')
 , RedisStore = require('connect-redis')(express)
@@ -16,8 +25,8 @@ var express = require('express')
 });
 
 require('prime');
-global._ = require(__dirname+'/lib/shell.js');
-global._env = require(__dirname+'/lib/env.js');
+// global._ = require(__dirname+'/lib/shell.js');
+// global._env = require(__dirname+'/lib/env.js');
 global.logger = logger;
 
 // CORS settings, passing * for now
@@ -34,7 +43,7 @@ app.all('*', function(req, res, next){
 
 // just listen.
 server.listen(8888);
-logger.info('Starting Bikes Server');
+logger.info('Starting BikeSss Server');
 
 function compile(str, path) {
 	return stylus(str)
@@ -70,7 +79,9 @@ app.configure(function() {
 	app.get('/', function (req, res) {
 		res.render(
 			'index',{
-				title : 'Home' 
+				title : 'Home',
+				url_cdn: _config.url_cdn,
+				url_socketio: _config.url_socketio
 		});
 	});
 });

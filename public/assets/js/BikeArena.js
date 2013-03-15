@@ -5,12 +5,12 @@ var BikeArena = new Class({
 		size: {x: 256, y: 256},
 		colorBorders: '#eee',
 		cellSize: 10,
-		offset: {x: 1, y: 1}
+		offset: {x: 0, y: 0}
 	},
 	_bound: false,
 	_canvas: false,
 	_players: {},
-	Prefix: 'client',
+	Prefix: 'Arena',
 	initialize: function(options) {
 		this.setOptions(options);
 		// console.log(Cookie.read('express.sid'))
@@ -25,13 +25,13 @@ var BikeArena = new Class({
 			_eventClickInsertCoin: this._eventClickInsertCoin.bind(this),
 			_eventKeydown: this._eventKeydown.bind(this),
 			_companyWelcome: this._companyWelcome.bind(this),
-			_companyRedraw: this._companyRedraw.bind(this)
+			_companyRefresh: this._companyRefresh.bind(this)
 		}
 		this._form.addEvent('click:relay(button.submit)', this._bound._eventClickEnroll);
 		document.id('insertCoin').addEvent('click', this._bound._eventClickInsertCoin);
 		window.addEvent('keydown', this._bound._eventKeydown);
-		this.subscribe('client.welcome', this._bound._companyWelcome);
-		this.subscribe('client.redraw', this._bound._companyRedraw);
+		this.subscribe('Arena.welcome', this._bound._companyWelcome);
+		this.subscribe('Arena.refresh', this._bound._companyRefresh);
 	},
 	_eventClickEnroll: function(e, el) {
 		e.stop();
@@ -60,7 +60,8 @@ var BikeArena = new Class({
 		this._gridLoad(payload);
 		this._playersSet(payload.players);
 	},
-	_companyRedraw: function(payload) {
+	_companyRefresh: function(payload) {
+		console.log('redraw', payload)
 		this._playersSet(payload.players);
 	},
 	_gridInit: function() {
@@ -80,18 +81,20 @@ var BikeArena = new Class({
 		return this;
 	},
 	_gridLoad: function(payload) {
-		Object.each(payload.grid, function(xAxis, y) {
-			Object.each(xAxis, function(id, x) {
-				var p = Object.clone(payload.players[id]);
-				p._coords.x = x;
-				p._coords.y = y;
-				this._injectBike(p);
-			}, this);
-		}, this)
+		// console.log(payload);
+		// return;
+		// Object.each(payload.grid, function(xAxis, y) {
+		// 	Object.each(xAxis, function(id, x) {
+		// 		var p = Object.clone(payload.players[id]);
+		// 		p._coords.x = x;
+		// 		p._coords.y = y;
+		// 		this._injectBike(p);
+		// 	}, this);
+		// }, this)
 	},
 	_playersSet: function(players) {
 		Object.each(players, function(p) {
-			if (!p._id) console.log('Invalid p._id!');
+			if (!p._id) console.log('Invalid p._id!', p);
 			if (!this._players[p._id]) {
 				this._injectScore(p);
 				this._players[p._id] = true;
@@ -105,8 +108,13 @@ var BikeArena = new Class({
 			this._players[p._id] = 'dead';
 			document.id('players').getElement('li[rel='+p._id+']').addClass('dead');
 		}
+		console.log(p)
 		var fillColor = p._life == 'dead' ? p._color : 'white';
-		return this._canvas.rect(p._coords.x*this.options.cellSize, p._coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor});
+		Array.each(p._coords, function(coords) {
+			console.log(coords)
+			this._canvas.rect(coords.x*this.options.cellSize, coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor});
+		});
+		//return this._canvas.rect(p._coords.x*this.options.cellSize, p._coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor});
 	},
 	_injectScore: function(p) {
 		var ul = document.id('players');

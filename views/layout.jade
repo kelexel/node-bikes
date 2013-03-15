@@ -4,11 +4,11 @@ html
     title #{title} - Bikes!
     link(rel='stylesheet', href='/assets/css/style.css')
     block scripts
-      script(src='http://cdn.iconference.new-net.net/min/g=core_full,raphael')
-      script(src='http://bikesss.dune.org:8888/socket.io/socket.io.js')
-      script(src='/assets/js/BikeSocket.js')
-      script(src='/assets/js/BikeArena.js')
-      script(src='/assets/js/init.js')
+      script(src='#{url_cdn}')
+      script(src='#{url_socketio}/socket.io/socket.io.js')
+      script(src='#{url_socketio}/assets/js/BikeSocket.js')
+      script(src='#{url_socketio}/assets/js/BikeArena.js')
+      script(src='#{url_socketio}/assets/js/init.js')
   body
     header
       h1 BikeSss!
