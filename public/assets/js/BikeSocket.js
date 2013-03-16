@@ -33,9 +33,11 @@ var BikeSocket = new Class({
 		this._socket = io.connect(this.options.socketUrl, {query: "name="+this.options.name});
 		this._bound._processWelcome = this._processWelcome.bind(this);
 		this._bound._processRefresh = this._processRefresh.bind(this);
+		this._bound._processGameOver = this._processGameOver.bind(this);
 
 		this._socket.on('welcome', this._bound._processWelcome);
 		this._socket.on('refresh', this._bound._processRefresh);
+		this._socket.on('gameOver', this._bound._processGameOver);
 		return this;
 	},
 	disconnect: function() {
@@ -52,6 +54,9 @@ var BikeSocket = new Class({
 	},
 	_processRefresh: function(payload) {
 		this.copublish('Arena.refresh', [payload]);
+	},
+	_processGameOver: function(payload) {
+		this.copublish('Arena.gameOver', [payload]);
 	},
 	_debug: function(str, msg) {
 		if (!this.options.debug || !console || !console.log) return;

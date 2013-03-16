@@ -25,23 +25,23 @@ var BikeArena = new Class({
 			_eventClickInsertCoin: this._eventClickInsertCoin.bind(this),
 			_eventKeydown: this._eventKeydown.bind(this),
 			_companyWelcome: this._companyWelcome.bind(this),
-			_companyRefresh: this._companyRefresh.bind(this)
+			_companyRefresh: this._companyRefresh.bind(this),
+			_companyGameOver: this._companyGameOver.bind(this)
 		}
 		this._form.addEvent('click:relay(button.submit)', this._bound._eventClickEnroll);
 		document.id('insertCoin').addEvent('click', this._bound._eventClickInsertCoin);
 		window.addEvent('keydown', this._bound._eventKeydown);
 		this.subscribe('Arena.welcome', this._bound._companyWelcome);
 		this.subscribe('Arena.refresh', this._bound._companyRefresh);
+		this.subscribe('Arena.gameOver', this._bound._companyGameOver);
 	},
 	_eventClickEnroll: function(e, el) {
 		e.stop();
 		var form = document.id('enroll');
-		var insertCoin = document.id('insertCoin');
 		if (form.validate()) {
 			var name = document.id('f_playerName').get('value');
 			_i['socket'] = new BikeSocket({'socketUrl': this.options.socketUrl, 'name': name});
 			form.addClass('hidden');
-			insertCoin.removeClass('hidden');
 		}
 	},
 	_eventClickInsertCoin: function(e, el) {
@@ -49,6 +49,7 @@ var BikeArena = new Class({
 		// _i['socket'].disconnect();
 		// _i['socket'].connect();
 		this.copublish('emit', ['insertCoin', false, false]);
+		document.id('insertCoin').addClass('hidden');
 	},
 	_eventKeydown: function(e) {
 		if (![37,38,39,40].contains(e.code)) return;
@@ -57,15 +58,21 @@ var BikeArena = new Class({
 		this.copublish('emit', ['move', keys[e.code], false]);
 	},
 	_companyWelcome: function(payload) {
-		this._gridLoad(payload);
+		// this._gridLoad(payload);
+		console.log('welcome', payload)
 		this._playersSet(payload.players);
 	},
 	_companyRefresh: function(payload) {
 		console.log('redraw', payload)
-		this._playersSet(payload.players);
+		this._injectBike(payload.player);
+	},
+	_companyGameOver: function(payload) {
+		alert(payload.msg);
+		document.id('insertCoin').removeClass('hidden');
 	},
 	_gridInit: function() {
-		this._canvas = Raphael(document.id('grid'), this.options.size.x*2+'px', this.options.size.y*2+'px');
+		// this._canvas = Raphael(document.id('grid'), this.options.size.x*2+'px', this.options.size.y*2+'px');
+		this._canvas = Raphael(document.id('grid'), '1000px', '1000px');
 		var size = {x: this.options.size.x*2, y: this.options.size.y*2};
 		this.options.cellSize = 10
 		// many thanks to http://stackoverflow.com/questions/10274284/what-is-the-correct-way-to-draw-straight-lines-using-raphael-js
@@ -80,18 +87,17 @@ var BikeArena = new Class({
 		this._canvas.renderfix();
 		return this;
 	},
-	_gridLoad: function(payload) {
-		// console.log(payload);
-		// return;
-		// Object.each(payload.grid, function(xAxis, y) {
-		// 	Object.each(xAxis, function(id, x) {
-		// 		var p = Object.clone(payload.players[id]);
-		// 		p._coords.x = x;
-		// 		p._coords.y = y;
-		// 		this._injectBike(p);
-		// 	}, this);
-		// }, this)
-	},
+	// _gridLoad: function(payload) {
+	// 	Object.each(payload.grid, function(xAxis, y) {
+	// 		Object.each(xAxis, function(id, x) {
+	// 			var p = Object.clone(payload.players[id]);
+	// 			p._coords.x = x;
+	// 			p._coords.y = y;
+	// 			console.log(p)
+	// 			this._injectBike(p);
+	// 		}, this);
+	// 	}, this)
+	// },
 	_playersSet: function(players) {
 		Object.each(players, function(p) {
 			if (!p._id) console.log('Invalid p._id!', p);
@@ -108,12 +114,17 @@ var BikeArena = new Class({
 			this._players[p._id] = 'dead';
 			document.id('players').getElement('li[rel='+p._id+']').addClass('dead');
 		}
-		console.log(p)
+		// console.log(p)
 		var fillColor = p._life == 'dead' ? p._color : 'white';
-		Array.each(p._coords, function(coords) {
-			console.log(coords)
-			this._canvas.rect(coords.x*this.options.cellSize, coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor});
-		});
+		if (p._current)
+			return this._canvas.rect(p._current.x*this.options.cellSize, p._current.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor});
+		else 
+		{
+			Array.each(p._coords, function(coords) {
+				// console.log(p._id,'c',coords)
+				this._canvas.rect(coords.x*this.options.cellSize, coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor});
+			}, this);
+		}
 		//return this._canvas.rect(p._coords.x*this.options.cellSize, p._coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor});
 	},
 	_injectScore: function(p) {
