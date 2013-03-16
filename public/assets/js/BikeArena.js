@@ -59,11 +59,11 @@ var BikeArena = new Class({
 	},
 	_companyWelcome: function(payload) {
 		// this._gridLoad(payload);
-		console.log('welcome', payload)
+		// console.log('welcome', payload)
 		this._playersSet(payload.players);
 	},
 	_companyRefresh: function(payload) {
-		console.log('redraw', payload)
+		// console.log('redraw', payload)
 		this._injectBike(payload.player);
 	},
 	_companyGameOver: function(payload) {
