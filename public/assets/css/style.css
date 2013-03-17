@@ -126,6 +126,7 @@ header {
 }
 h2 {
   color: #fa5b4d;
+  margin-bottom: 10px;
 }
 a,
 a:visited {
@@ -222,6 +223,15 @@ ul#players li span.bullet {
 }
 ul#players li.dead span {
   text-decoration: line-through;
+}
+ul#players li.you {
+  height: 40px;
+  line-height: 40px;
+}
+ul#players li.you span.bullet {
+  width: 40px;
+  height: 40px;
+  border-width: 4px;
 }
 .hidden {
   display: none;

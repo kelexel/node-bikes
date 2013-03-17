@@ -7,16 +7,17 @@
     "express": ">=3.0.6",
 	"socket.io": ">=0.9.13",
 	"socket.io-client": ">=0.9.11",
-	"stylus": "*",
-	"nib": "*",
-	"jade": "*",
+	"stylus": "0.32.1",
+	"nib": "0.9.1",
+	"jade": "0.28.2",
 	"fs": "0.0.0",
 	"connect-redis": "1.4.5",
 	"prime": "0.1.0",
 	"forever": "0.10.0",
 	"winston": "0.6.2",
-	"cookie": "*",
-	"crypto": "*",
-	"connect": "*"
+	"cookie": "0.0.5",
+	"crypto": "0.0.3",
+	"connect": "2.7.3",
+	"colorspaces": "0.1.3"
   }
 }

@@ -11,6 +11,7 @@ var BikeArena = new Class({
 	_canvas: false,
 	_players: {},
 	_bonuses: {},
+	_player: false,
 	Prefix: 'Arena',
 	initialize: function(options) {
 		this.setOptions(options);
@@ -65,11 +66,13 @@ var BikeArena = new Class({
 	_companyWelcome: function(payload) {
 		this._gridInit(payload.arena);
 		document.id('players').set('html', '');
-		this._playersSet(payload.players);
+		this._player = payload.player;
+		this._playersInit(payload.players);
 		this._injectBonuses(payload.bonuses);
 	},
 	_companyNewPlayer: function(payload) {
 		var newPlayer = payload.newPlayer;
+		if (newPlayer._id == this._player._id) return;
 		this._injectScore(newPlayer);
 		this._players[newPlayer._id] = { _life: newPlayer._life, _bikes: [], _size: newPlayer._size, _coords: newPlayer._coords };
 		// this._players[payload.newPlayer._id] = true;
@@ -83,7 +86,8 @@ var BikeArena = new Class({
 		document.id('insertCoin').removeClass('hidden');
 	},
 	_companyRemoveBonus: function(payload) {
-		this._bonues[payload].remove();
+		this._bonuses[payload.bonus].remove();
+		delete this._bonuses[payload.bonus];
 	},
 	_gridInit: function(options) {
 		this._canvas = Raphael(document.id('grid'), options.width, options.height);
@@ -101,23 +105,22 @@ var BikeArena = new Class({
 		this._canvas.renderfix();
 		return this;
 	},
-
+	_playersInit: function(players) {
+		Object.each(players, function(p) {
+			if (!p._id && console && console.log) console.log('Invalid p._id!', p);
+			if (!this._players[p._id]) {
+				this._injectScore(p);
+				this._players[p._id] = { _life: p._life, _bikes: [], _size: p._size, _coords: p._coords };
+			}
+			this._injectBike(p);
+		}, this);
+		this._canvas.renderfix();
+	},
 	_injectBonuses: function(bonuses) {
 		Object.each(bonuses, function(b){
 			this._canvas.rect(b._coords.x*this.options.cellSize, b._coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: '#000', fill: '#000'});
 			this._bonuses[b._id] = this._canvas.text(Math.floor(b._coords.x*this.options.cellSize+5), Math.floor(b._coords.y*this.options.cellSize+5), b._type).attr({'font-family': 'serif', 'font-weight': 'bold', 'font-size': '10'}).attr({'fill': '#fff'});
 		}, this);
-	},
-	_playersSet: function(players) {
-		Object.each(players, function(p) {
-			if (!p._id) console.log('Invalid p._id!', p);
-			if (!this._players[p._id]) {
-				this._injectScore(p);
-				this._players[p._id] = { _life: p._life, _bikes: [], _size: p._size, _coords: p._coords };
-			}
-			this._injectBike(p)
-		}, this);
-		this._canvas.renderfix();
 	},
 	_injectBike: function(p) {
 		if (p._life == 'dead' && this._players[p._id]._life != 'dead') {
@@ -129,11 +132,11 @@ var BikeArena = new Class({
 		}
 		var fillColor = p._life == 'dead' ? p._color : 'white';
 		if (p._current)
-			this._players[p._id]._bikes.push(this._canvas.rect(p._current.x*this.options.cellSize, p._current.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor, class: p._id}));
+			this._players[p._id]._bikes.push(this._canvas.rect(p._current.x*this.options.cellSize, p._current.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor}));
 		else 
 		{
 			Array.each(p._coords, function(coords) {
-				this._players[p._id]._bikes.push(this._canvas.rect(coords.x*this.options.cellSize, coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor, class: p._id}));
+				this._players[p._id]._bikes.push(this._canvas.rect(coords.x*this.options.cellSize, coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor}));
 			}, this);
 		}
 		//return this._canvas.rect(p._coords.x*this.options.cellSize, p._coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor});
@@ -144,13 +147,13 @@ var BikeArena = new Class({
 		return this._players[p._id]._bikes.length > p._size ? this._trimBike(p) : true;
 	},
 	_injectScore: function(p) {
+		if (this._players[p._id]) return;
+
 		var ul = document.id('players');
-		var li = new Element('li', {'rel': p._id}).inject(ul);
+		var li = new Element('li', {'rel': p._id}).inject(ul, p._id == this._player._id ? 'top': 'bottom');
 		new Element('span', {'class': 'bullet', 'styles': {'border': '2px solid '+p._color}}).inject(li);
 		new Element('span', {'class': 'name', 'html': p._name}).inject(li);
 		if (p._life == 'dead') li.addClass('dead');
-	},
-	_draw: function(payload) {
-
+		if (p._id == this._player._id) li.addClass('you');
 	}
 })

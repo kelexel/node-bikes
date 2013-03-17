@@ -51,16 +51,10 @@ function compile(str, path) {
 app.configure(function() {
 	// set an express cookie + session, not really used for now
 	app.use(express.cookieParser());
-	app.use(express.session({
-		secret: 'helloworld',
-		key: 'express.sid'
-		// store: sessionStore
-	}));
 	app.set('views', __dirname + '/views');
 	app.set('view engine', 'jade');
 	app.use(express.bodyParser());
 	app.use(express.methodOverride());
-	app.use(express.cookieParser());
 	app.use(app.router);
 	// serve up static file if found
 	app.engine('.html', require('jade').__express);
