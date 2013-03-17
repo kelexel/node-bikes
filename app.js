@@ -6,7 +6,7 @@
 
 var express = require('express')
 , RedisStore = require('connect-redis')(express)
-, sessionStore = new RedisStore()
+, connect = require('connect')
 , stylus = require('stylus')
 , nib = require('nib')
 , app = express()
@@ -19,8 +19,24 @@ var express = require('express')
 , env = require(__dirname+'/lib/env.js');
 require('prime');
 
+// var redis = require('socket.io/lib/stores/redis');
+// var pub = redis.createClient(env.redisPort, "http://localhost");
+// var sub = redis.createClient(env.redisPort, "http://localhost");
+// var store = redis.createClient(env.redisPort, "http://localhost");
+// pub.auth('pass', function(){console.log("adentro! pub")});
+// sub.auth('pass', function(){console.log("adentro! sub")});
+// store.auth('pass', function(){console.log("adentro! store")});
+
+
+
+var sessionStore = new connect.middleware.session.MemoryStore();
+// var redisStore = require('connect-redis')(express);
+// var sessionStore = new connect.middleware.session.RedisStore();
+// var redisStore = new connect.middleware.session.RedisStore({redisPub:pub, redisSub:sub, redisClient:store});
+
 global.logger = logger;
 
+// io.set('authorization');
 
 
 // CORS settings, passing * for now
@@ -39,9 +55,6 @@ app.all('*', function(req, res, next){
 // just listen.
 if (!(env.listenPort)) throw Error('Something is wrong with lib/env.js !');
 
-server.listen(env.listenPort);
-logger.info('Starting BikeSss Server on port', env.listenPort);
-
 function compile(str, path) {
 	return stylus(str)
 	.set('filename', path)
@@ -51,11 +64,12 @@ function compile(str, path) {
 // express setup
 app.configure(function() {
 	// set an express cookie + session, not really used for now
-	app.use(express.cookieParser());
+	app.use(express.cookieParser(env.sessionKey));
 	app.set('views', __dirname + '/views');
 	app.set('view engine', 'jade');
 	app.use(express.bodyParser());
 	app.use(express.methodOverride());
+	app.use(express.session({ secret: env.sessionKey, store: sessionStore }));
 	app.use(app.router);
 	// serve up static file if found
 	app.engine('.html', require('jade').__express);
@@ -66,6 +80,11 @@ app.configure(function() {
 		compile: compile
 	}
 	));
+
+});
+server.listen(env.listenPort);
+logger.info('Starting BikeSss Server on port', env.listenPort);
+
 	app.use('/', express.static(__dirname + '/public'));
 	app.get('/', function (req, res) {
 		res.render(
@@ -75,7 +94,26 @@ app.configure(function() {
 				url_socketio: env.url_socketio
 		});
 	});
-});
+
+	io.configure(function() {
+		io.enable('browser client etag');          // apply etag caching logic based on version number
+		io.enable('browser client gzip');          // gzip the file	
+		io.set('log level', 1);
+//		io.set('store', redisStore);
+	})
+	.configure('prod', function () { 
+		logger.info('Starting io in production mode');
+		io.enable('browser client minification');
+		io.enable('browser client gzip');          // gzip the file	
+		io.enable('browser client etag');
+		io.set('transports', ['websocket']);
+	})
+	.configure('dev', function(){
+		logger.info('Starting io in developmment mode');
+		io.set('transports', ['websocket', 'flashsocket', 'htmlfile', 'xhr-polling', 'jsonp-polling']);
+	});
+	var ioSession = require('socket.io-session');
+	io.set('authorization', ioSession(express.cookieParser(env.sessionKey), sessionStore));
 
 var dm = new (require(__dirname+'/lib/server.js'))(io, server);
 

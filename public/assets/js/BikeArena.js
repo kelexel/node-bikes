@@ -42,11 +42,10 @@ var BikeArena = new Class({
 	},
 	_eventClickEnroll: function(e, el) {
 		e.stop();
-		var form = document.id('enroll');
-		if (form.validate()) {
+		if (this._form.validate()) {
 			var name = document.id('f_playerName').get('value');
 			_i['socket'] = new BikeSocket({'socketUrl': this.options.socketUrl, 'name': name});
-			form.addClass('hidden');
+			this._form.addClass('hidden');
 		}
 	},
 	_eventClickInsertCoin: function(e, el) {
@@ -155,6 +154,9 @@ var BikeArena = new Class({
 		new Element('span', {'class': 'bullet', 'styles': {'border': '2px solid '+p._color}}).inject(li);
 		new Element('span', {'class': 'name', 'html': p._name}).inject(li);
 		if (p._life == 'dead') li.addClass('dead');
-		if (p._id == this._player._id) li.addClass('you');
+		if (p._id == this._player._id) {
+			li.addClass('you');
+			if (p._life == 'dead') document.id('insertCoin').removeClass('hidden');
+		}
 	}
 })
