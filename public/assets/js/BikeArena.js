@@ -14,7 +14,6 @@ var BikeArena = new Class({
 	Prefix: 'Arena',
 	initialize: function(options) {
 		this.setOptions(options);
-		// console.log(Cookie.read('express.sid'))
 		this._form = document.id('enroll');
 		var v = new Form.Validator.Inline(this._form);
 		v.addEvent('onFormValidate', function(validates) { return validates; })
@@ -64,22 +63,19 @@ var BikeArena = new Class({
 		this.copublish('emit', ['move', keys[e.code], false]);
 	},
 	_companyWelcome: function(payload) {
-		// this._gridLoad(payload);
-		// console.log('welcome', payload)
 		this._gridInit(payload.arena);
 		document.id('players').set('html', '');
 		this._playersSet(payload.players);
 		this._injectBonuses(payload.bonuses);
 	},
 	_companyNewPlayer: function(payload) {
-		// console.log('redraw', payload)
-		this._injectScore(payload.newPlayer);
-		this._players[p._id] = { _life: newPlayer._life, _bikes: [], _size: newPlayer._size, _coords: newPlayer._coords };
+		var newPlayer = payload.newPlayer;
+		this._injectScore(newPlayer);
+		this._players[newPlayer._id] = { _life: newPlayer._life, _bikes: [], _size: newPlayer._size, _coords: newPlayer._coords };
 		// this._players[payload.newPlayer._id] = true;
 		this._injectBike(payload.newPlayer);
 	},
 	_companyMove: function(payload) {
-		// console.log('redraw', payload)
 		this._injectBike(payload.player);
 	},
 	_companyGameOver: function(payload) {
@@ -87,11 +83,9 @@ var BikeArena = new Class({
 		document.id('insertCoin').removeClass('hidden');
 	},
 	_companyRemoveBonus: function(payload) {
-		console.log('_companyRemoveBonus', payload);
 		this._bonues[payload].remove();
 	},
 	_gridInit: function(options) {
-		console.log('grid init', options)
 		this._canvas = Raphael(document.id('grid'), options.width, options.height);
 		var size = {x: options.size.x*2, y: options.size.y*2};
 		// options.cellSize = 10
