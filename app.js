@@ -1,14 +1,7 @@
 // Use with something like:
 //	env NODE_ENV='dev' node app.js
 //	env NODE_ENV='prod' node app.js
-var config = {
-	'url_cdn': 'http://cdn.iconference.new-net.net/min/g=core_full,raphael',
-	'url_socketio': 'http://bikesss.dune.org:8888'
-};
-var _config = {
-	'url_cdn': 'http://cdn.iconference.new-net.net/min/g=core_full,raphael',
-	'url_socketio': 'http://localhost:8888'
-};
+
 
 
 var express = require('express')
@@ -22,12 +15,13 @@ var express = require('express')
 , logger = require(__dirname+'/lib/logger.js')
 , io = require('socket.io').listen(server,{
 	// logger : logger
-});
-
+})
+, env = require(__dirname+'/lib/env.js');
 require('prime');
-// global._ = require(__dirname+'/lib/shell.js');
-// global._env = require(__dirname+'/lib/env.js');
+
 global.logger = logger;
+
+
 
 // CORS settings, passing * for now
 app.all('*', function(req, res, next){
@@ -42,8 +36,10 @@ app.all('*', function(req, res, next){
 });
 
 // just listen.
-server.listen(8888);
-logger.info('Starting BikeSss Server');
+if (!(env.listenPort)) throw Error('Something is wrong with lib/env.js !');
+
+server.listen(env.listenPort);
+logger.info('Starting BikeSss Server on port', env.listenPort);
 
 function compile(str, path) {
 	return stylus(str)
@@ -80,8 +76,8 @@ app.configure(function() {
 		res.render(
 			'index',{
 				title : 'Home',
-				url_cdn: _config.url_cdn,
-				url_socketio: _config.url_socketio
+				url_cdn: env.url_cdn,
+				url_socketio: env.url_socketio
 		});
 	});
 });

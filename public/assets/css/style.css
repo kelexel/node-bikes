@@ -112,7 +112,7 @@ body {
 }
 header {
   font-family: 'Quicksand';
-  padding: 50px 10px;
+  padding: 5px 10px;
   color: #fff;
   font-size: 25px;
   text-align: center;
@@ -124,14 +124,23 @@ header {
   border-bottom: 1px solid #df1806;
   text-shadow: 0px -1px 0px #df1806;
 }
+a,
+a:visited {
+  color: #fa5b4d;
+  text-decoration: none;
+}
+a:hover,
+a:active {
+  text-decoration: underline;
+}
 .container {
-  width: 960px;
-  margin: 50px auto;
+  width: 1200px;
+  margin: 20px auto;
   overflow: hidden;
 }
 .main-content {
   float: left;
-  width: 520px;
+  width: 800px;
 }
 .main-content p {
   margin-bottom: 20px;
@@ -156,7 +165,6 @@ header {
   box-shadow: inset 0px 0px 0px 3px rgba(255,255,255,0.8), 0px 3px 0px -2px rgba(0,0,0,0.1);
 }
 .sidebar .widget h1 {
-  font-family: 'Quicksand';
   margin: 13px 10px 4px;
   padding-bottom: 10px;
   border-bottom: 1px dotted #ddd;
@@ -173,7 +181,7 @@ p {
   line-height: 1.8;
 }
 footer {
-  width: 500px;
+  width: 100%;
   margin: 50px auto;
   border-top: 1px dotted #ccc;
   padding-top: 5px;
@@ -181,8 +189,8 @@ footer {
   text-align: center;
 }
 div#grid {
-  width: 512px;
-  height: 512px;
+  width: 800px;
+  height: 800px;
 }
 ul#players li {
   height: 20px;
