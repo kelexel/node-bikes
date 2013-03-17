@@ -30,7 +30,7 @@ var BikeSocket = new Class({
 	connect: function() {
 		this._debug('setup socket!')
 
-		this._socket = io.connect(this.options.socketUrl, {query: "name="+this.options.name});
+		this._socket = io.connect(this.options.socketUrl, {query: "name="+this.options.name, 'withCredentials': true});
 		this._bound._processWelcome = this._processWelcome.bind(this);
 		this._bound._processMove = this._processMove.bind(this);
 		this._bound._processNewPlayer = this._processNewPlayer.bind(this);

@@ -57,7 +57,7 @@ var BikeArena = new Class({
 		document.id('insertCoin').addClass('hidden');
 	},
 	_eventKeydown: function(e) {
-		if (console && console.log) console.log(e.code)
+		// if (console && console.log) console.log(e.code)
 		if ([27, 13].contains(e.code)) {e.stop(); return; }
 		else if (![37,38,39,40].contains(e.code)) return;
 		var keys = {37: 'l', 38: 'u', 39: 'r', 40: 'd'};
