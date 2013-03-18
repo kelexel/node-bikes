@@ -12,7 +12,7 @@ var BikeArena = new Class({
 	_players: {},
 	_bonuses: {},
 	_player: false,
-	_state: 'stopped',
+	_arenaState: 'lobby',
 	_gameTimer: {el: false, value: false, instance: false, max: false},
 	Prefix: 'Arena',
 	initialize: function(options) {
@@ -29,7 +29,7 @@ var BikeArena = new Class({
 			_eventKeydown: this._eventKeydown.bind(this),
 			_companyWelcome: this._companyWelcome.bind(this),
 			_companyMove: this._companyMove.bind(this),
-			_companyGameOver: this._companyGameOver.bind(this),
+			// _companyGameOver: this._companyGameOver.bind(this),
 			_companyNewPlayer: this._companyNewPlayer.bind(this),
 			_companyRemoveBonus: this._companyRemoveBonus.bind(this),
 			_companyState: this._companyState.bind(this)
@@ -40,7 +40,7 @@ var BikeArena = new Class({
 		this.subscribe('Arena.welcome', this._bound._companyWelcome);
 		this.subscribe('Arena.move', this._bound._companyMove);
 		this.subscribe('Arena.newPlayer', this._bound._companyNewPlayer);
-		this.subscribe('Arena.gameOver', this._bound._companyGameOver);
+		// this.subscribe('Arena.gameOver', this._bound._companyGameOver);
 		this.subscribe('Arena.removeBonus', this._bound._companyRemoveBonus);
 		this.subscribe('Arena.state', this._bound._companyState);
 	},
@@ -54,7 +54,7 @@ var BikeArena = new Class({
 	},
 	_eventClickInsertCoin: function(e, el) {
 		e.stop();
-		if (this._state != 'run') return;
+		if (this._arenaState != 'running') return;
 		// _i['socket'].disconnect();
 		// _i['socket'].connect();
 		this.copublish('emit', ['insertCoin', false, false]);
@@ -66,7 +66,7 @@ var BikeArena = new Class({
 		else if (![37,38,39,40].contains(e.code)) return;
 		var keys = {37: 'l', 38: 'u', 39: 'r', 40: 'd'};
 		e.stop();
-		if (this._state != 'run') return;
+		if (this._arenaState != 'running') return;
 		this.copublish('emit', ['move', keys[e.code], false]);
 	},
 	_companyWelcome: function(payload) {
@@ -75,41 +75,56 @@ var BikeArena = new Class({
 		this._player = payload.player;
 		this._playersInit(payload.players);
 		this._injectBonuses(payload.bonuses);
+		this._companyState(payload.state);
+		if (payload.log) this._log(payload.log);
 	},
 	_companyNewPlayer: function(payload) {
 		var newPlayer = payload.newPlayer;
 		if (newPlayer._id == this._player._id) return;
-		this._injectScore(newPlayer);
 		this._players[newPlayer._id] = { _life: newPlayer._life, _bikes: [], _size: newPlayer._size, _coords: newPlayer._coords };
+		this._injectScore(newPlayer);
 		// this._players[payload.newPlayer._id] = true;
 		this._injectBike(payload.newPlayer);
 	},
 	_companyMove: function(payload) {
+		// console.log('move', payload)
 		this._injectBike(payload.player);
+		this._updateScore(payload.player);
 	},
-	_companyGameOver: function(payload) {
-		alert(payload.msg);
+	_checkGameOver: function(payload) {
+		if (payload.state != 'gameOver') return;
+		if (payload.log) {
+			this._log(payload.log, 10);
+			alert(payload.log);
+		}
 		document.id('insertCoin').removeClass('hidden');
 	},
 	_companyRemoveBonus: function(payload) {
+		var bSize = {'x': this._bonuses[payload.bonus].attr('x'), 'y': this._bonuses[payload.bonus].attr('y') };
+		var nT = this._canvas.text(bSize.x, bSize.y, '!').attr({'font-family': 'serif', 'font-weight': 'bold', 'font-size': '10'}).attr({'fill': '#fff'});
+		nT.insertAfter(this._bonuses[payload.bonus]);
 		this._bonuses[payload.bonus].remove();
-		delete this._bonuses[payload.bonus];
 	},
 	_companyState: function(payload) {
-		console.log('state', payload)
-		console.log('set state', payload.state)
-		if (payload.state) this._setTimerPeriodical(payload.state);
-		this._state = payload.state;
+		// console.log('_companyState payload', payload)
+		if (payload.state == 'running' && payload.timer) {
+			if (payload.log) this._log(payload.log, 3);
+			this._setTimerPeriodical(payload.timer);
+			this._arenaState = 'running';
+		} else if (payload.state == 'gameOver') {
+			// console.log('received gameOver')
+			this._checkGameOver(payload);
+		} else {
+			// console.log('timer not started')
+			this._arenaState = payload.state;
+		}
 	},
 	_setTimerPeriodical: function(time) {
 		if (this._gameTimer.instance) clearTimeout(this._gameTimer.instance);
-		console.log('received', time);
-		console.log(Math.floor(Date.now() / 1000), time)
-		time = Math.floor(Date.now() / 1000) - time.toInt()
-		console.log('time - now', time);
-		// time = Math.floor(time - this._gameTimer.max)
-		// console.log('time - remaining', time);
-		this._gameTimer.value = time;
+		// console.log('using time', time);
+		time = time - Math.floor(Date.now() / 1000) + 900;
+		// console.log('starting timer at ', time)
+		this._gameTimer.value = time.toInt();
 		this._gameTimer.instance = this._decreaseTimer.periodical(1000, this);
 	},
 	_decreaseTimer: function() {
@@ -134,16 +149,15 @@ var BikeArena = new Class({
 		this._gameTimer.el = document.id('status').getElement('span.counter em').set('html', options.gameTime);
 		this._gameTimer.value = options.gameTime.toInt();
 		this._gameTimer.max = options.gameTime.toInt();
-		// if (options.state) this._setTimerPeriodical(options.state.toInt());
-		console.log(this._gameTimer)
+		// console.log('megadebug', options)
 		return this;
 	},
 	_playersInit: function(players) {
 		Object.each(players, function(p) {
 			if (!p._id && console && console.log) console.log('Invalid p._id!', p);
 			if (!this._players[p._id]) {
+				this._players[p._id] = { _life: p._life, _bikes: [], _size: p._size, _coords: p._coords, _scoreBoard: false, _score: p._score};
 				this._injectScore(p);
-				this._players[p._id] = { _life: p._life, _bikes: [], _size: p._size, _coords: p._coords };
 			}
 			this._injectBike(p);
 		}, this);
@@ -156,23 +170,30 @@ var BikeArena = new Class({
 		}, this);
 	},
 	_injectBike: function(p) {
-		if (p._life == 'dead' && this._players[p._id]._life != 'dead') {
-			this._players[p._id]._life = 'dead';
+		if (!p._life && this._players[p._id]._life) {
+			this._players[p._id]._life = false;
 			document.id('players').getElement('li[rel='+p._id+']').addClass('dead');
 		}
 		if (this._players[p._id]._bikes.length > p._size) {
 			this._trimBike(p);
 		}
-		var fillColor = p._life == 'dead' ? p._color : 'white';
+		var fillColor = !p._life  ? '#000' : p._color;
+		// var strokeColor = p._color;
+		var strokeColor = '#000';
 		if (p._current)
-			this._players[p._id]._bikes.push(this._canvas.rect(p._current.x*this.options.cellSize, p._current.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor}));
+			this._players[p._id]._bikes.push(this._canvas.rect(p._current.x*this.options.cellSize, p._current.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: strokeColor, fill: fillColor}));
 		else 
 		{
 			Array.each(p._coords, function(coords) {
-				this._players[p._id]._bikes.push(this._canvas.rect(coords.x*this.options.cellSize, coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor}));
+				this._players[p._id]._bikes.push(this._canvas.rect(coords.x*this.options.cellSize, coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: strokeColor, fill: fillColor}));
 			}, this);
 		}
 		//return this._canvas.rect(p._coords.x*this.options.cellSize, p._coords.y*this.options.cellSize, this.options.cellSize, this.options.cellSize).attr({stroke: p._color, fill: fillColor});
+	},
+	_updateScore: function(p) {
+		// console.log('_updateScore recieved', p)
+		// console.log('scoreboard', this._players[p._id]._scoreBoard, p._score)
+		this._players[p._id]._scoreBoard.set('html', p._score);
 	},
 	_trimBike: function(p) {
 		this._players[p._id]._bikes[0].remove();
@@ -180,16 +201,26 @@ var BikeArena = new Class({
 		return this._players[p._id]._bikes.length > p._size ? this._trimBike(p) : true;
 	},
 	_injectScore: function(p) {
-		if (this._players[p._id]) return;
+		if (this._players[p._id]._scoreBoard) return;
 
 		var ul = document.id('players');
 		var li = new Element('li', {'rel': p._id}).inject(ul, p._id == this._player._id ? 'top': 'bottom');
+		var s = new Element('span', {'class': 'score', 'html': 'score: '}).inject(li);
+		this._players[p._id]._scoreBoard = new Element('em', {'html': p._score}).inject(s);
 		new Element('span', {'class': 'bullet', 'styles': {'border': '2px solid '+p._color}}).inject(li);
 		new Element('span', {'class': 'name', 'html': p._name}).inject(li);
-		if (p._life == 'dead') li.addClass('dead');
+		if (!p._life) li.addClass('dead');
 		if (p._id == this._player._id) {
 			li.addClass('you');
-			if (p._life == 'dead') document.id('insertCoin').removeClass('hidden');
+			if (!p._life) document.id('insertCoin').removeClass('hidden');
 		}
+	},
+	_log: function(str, time) {
+		document.id('arenaLog').set('html', str);
+		if (!time) return;
+		(function() {
+			// console.log('clearing log');
+			document.id('arenaLog').set('html', '' );
+		}).delay(time*1000);
 	}
 })

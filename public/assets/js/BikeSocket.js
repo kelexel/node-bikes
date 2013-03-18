@@ -34,14 +34,14 @@ var BikeSocket = new Class({
 		this._bound._processWelcome = this._processWelcome.bind(this);
 		this._bound._processMove = this._processMove.bind(this);
 		this._bound._processNewPlayer = this._processNewPlayer.bind(this);
-		this._bound._processGameOver = this._processGameOver.bind(this);
+		// this._bound._processGameOver = this._processGameOver.bind(this);
 		this._bound._processRemoveBonus = this._processRemoveBonus.bind(this);
 		this._bound._processState = this._processState.bind(this);
 
 		this._socket.on('welcome', this._bound._processWelcome);
 		this._socket.on('move', this._bound._processMove);
 		this._socket.on('newPlayer', this._bound._processNewPlayer);
-		this._socket.on('gameOver', this._bound._processGameOver);
+		// this._socket.on('gameOver', this._bound._processGameOver);
 		this._socket.on('removeBonus', this._bound._processRemoveBonus);
 		this._socket.on('state', this._bound._processState);
 		return this;
@@ -64,9 +64,9 @@ var BikeSocket = new Class({
 	_processNewPlayer: function(payload) {
 		this.copublish('Arena.newPlayer', [payload]);
 	},
-	_processGameOver: function(payload) {
-		this.copublish('Arena.gameOver', [payload]);
-	},
+	// _processGameOver: function(payload) {
+	// 	this.copublish('Arena.gameOver', [payload]);
+	// },
 	_processRemoveBonus: function(payload) {
 		this.copublish('Arena.removeBonus', [payload]);
 	},

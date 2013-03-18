@@ -8,7 +8,7 @@ block content
     span.counter 
       em: | 0 
       |  sec
-    h2: |Please wait for another player to join in..
+    h2#arenaLog
     button(id='insertCoin', class='hidden') Replay!
 
   div#grid
@@ -23,10 +23,10 @@ block sidebar
       |Adds n blocks to your bike
     li  
       em: |- 
-      |Removes one block from your bike
-    li
-      em: |+
-      |Adds one block from your bike
+      |Turns trail mode on (aka the funny bug)
+    //- li
+    //-   em: |+
+    //-   |Adds one block from your bike
     li
       em: |!
       |Block you cannot pass

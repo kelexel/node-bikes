@@ -192,6 +192,13 @@ footer {
   font-size: 13px;
   text-align: center;
 }
+#arenaLog {
+  height: 30px;
+  line-height: 30px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+}
 #status span.counter {
   float: right;
 }
@@ -223,6 +230,13 @@ ul#players li span {
 ul#players li span.bullet {
   width: 20px;
   margin-right: 5px;
+}
+ul#players li span.score {
+  float: right;
+  font-size: 11px;
+}
+ul#players li span.score em {
+  font-weight: bold;
 }
 ul#players li.dead span {
   text-decoration: line-through;
