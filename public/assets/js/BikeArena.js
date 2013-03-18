@@ -12,6 +12,8 @@ var BikeArena = new Class({
 	_players: {},
 	_bonuses: {},
 	_player: false,
+	_state: 'stopped',
+	_gameTimer: {el: false, value: false, instance: false, max: false},
 	Prefix: 'Arena',
 	initialize: function(options) {
 		this.setOptions(options);
@@ -29,7 +31,8 @@ var BikeArena = new Class({
 			_companyMove: this._companyMove.bind(this),
 			_companyGameOver: this._companyGameOver.bind(this),
 			_companyNewPlayer: this._companyNewPlayer.bind(this),
-			_companyRemoveBonus: this._companyRemoveBonus.bind(this)
+			_companyRemoveBonus: this._companyRemoveBonus.bind(this),
+			_companyState: this._companyState.bind(this)
 		}
 		this._form.addEvent('click:relay(button.submit)', this._bound._eventClickEnroll);
 		document.id('insertCoin').addEvent('click', this._bound._eventClickInsertCoin);
@@ -39,6 +42,7 @@ var BikeArena = new Class({
 		this.subscribe('Arena.newPlayer', this._bound._companyNewPlayer);
 		this.subscribe('Arena.gameOver', this._bound._companyGameOver);
 		this.subscribe('Arena.removeBonus', this._bound._companyRemoveBonus);
+		this.subscribe('Arena.state', this._bound._companyState);
 	},
 	_eventClickEnroll: function(e, el) {
 		e.stop();
@@ -50,6 +54,7 @@ var BikeArena = new Class({
 	},
 	_eventClickInsertCoin: function(e, el) {
 		e.stop();
+		if (this._state != 'run') return;
 		// _i['socket'].disconnect();
 		// _i['socket'].connect();
 		this.copublish('emit', ['insertCoin', false, false]);
@@ -61,6 +66,7 @@ var BikeArena = new Class({
 		else if (![37,38,39,40].contains(e.code)) return;
 		var keys = {37: 'l', 38: 'u', 39: 'r', 40: 'd'};
 		e.stop();
+		if (this._state != 'run') return;
 		this.copublish('emit', ['move', keys[e.code], false]);
 	},
 	_companyWelcome: function(payload) {
@@ -89,6 +95,27 @@ var BikeArena = new Class({
 		this._bonuses[payload.bonus].remove();
 		delete this._bonuses[payload.bonus];
 	},
+	_companyState: function(payload) {
+		console.log('state', payload)
+		console.log('set state', payload.state)
+		if (payload.state) this._setTimerPeriodical(payload.state);
+		this._state = payload.state;
+	},
+	_setTimerPeriodical: function(time) {
+		if (this._gameTimer.instance) clearTimeout(this._gameTimer.instance);
+		console.log('received', time);
+		console.log(Math.floor(Date.now() / 1000), time)
+		time = Math.floor(Date.now() / 1000) - time.toInt()
+		console.log('time - now', time);
+		// time = Math.floor(time - this._gameTimer.max)
+		// console.log('time - remaining', time);
+		this._gameTimer.value = time;
+		this._gameTimer.instance = this._decreaseTimer.periodical(1000, this);
+	},
+	_decreaseTimer: function() {
+		this._gameTimer.value--;
+		this._gameTimer.el.set('html', this._gameTimer.value);
+	},
 	_gridInit: function(options) {
 		this._canvas = Raphael(document.id('grid'), options.width, options.height);
 		var size = {x: options.size.x*2, y: options.size.y*2};
@@ -103,6 +130,12 @@ var BikeArena = new Class({
 			var hline = this._canvas.path(hpath).attr({stroke: this.options.colorBorders});
 		}
 		this._canvas.renderfix();
+
+		this._gameTimer.el = document.id('status').getElement('span.counter em').set('html', options.gameTime);
+		this._gameTimer.value = options.gameTime.toInt();
+		this._gameTimer.max = options.gameTime.toInt();
+		// if (options.state) this._setTimerPeriodical(options.state.toInt());
+		console.log(this._gameTimer)
 		return this;
 	},
 	_playersInit: function(players) {

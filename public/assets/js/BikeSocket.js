@@ -36,12 +36,14 @@ var BikeSocket = new Class({
 		this._bound._processNewPlayer = this._processNewPlayer.bind(this);
 		this._bound._processGameOver = this._processGameOver.bind(this);
 		this._bound._processRemoveBonus = this._processRemoveBonus.bind(this);
+		this._bound._processState = this._processState.bind(this);
 
 		this._socket.on('welcome', this._bound._processWelcome);
 		this._socket.on('move', this._bound._processMove);
 		this._socket.on('newPlayer', this._bound._processNewPlayer);
 		this._socket.on('gameOver', this._bound._processGameOver);
 		this._socket.on('removeBonus', this._bound._processRemoveBonus);
+		this._socket.on('state', this._bound._processState);
 		return this;
 	},
 	disconnect: function() {
@@ -67,6 +69,9 @@ var BikeSocket = new Class({
 	},
 	_processRemoveBonus: function(payload) {
 		this.copublish('Arena.removeBonus', [payload]);
+	},
+	_processState: function(payload) {
+		this.copublish('Arena.state', [payload]);
 	},
 	_debug: function(str, msg) {
 		if (!this.options.debug || !console || !console.log) return;

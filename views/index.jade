@@ -1,10 +1,14 @@
 extend layout
 block content
-  p
-    form(method='post', action='', id='enroll')
+  p: form(method='post', action='', id='enroll')
       | Please type in a biker name:
       label(for='f_playerName'): input(id='f_playerName', name='f_playerName', maxlength='12', data-validators='not-empty maxLength:12')
-      button(type='button', class='submit'): |play
+      button(type='button', class='submit'): | play
+  div#status 
+    span.counter 
+      em: | 0 
+      |  sec
+    h2: |Please wait for another player to join in..
     button(id='insertCoin', class='hidden') Replay!
 
   div#grid
@@ -29,6 +33,12 @@ block sidebar
     li
       em: |w 
       |Warps your bike somewhere on the grid
+    li
+      em: |z 
+      |Resets the player's score
+    li
+      em: |/ 
+      |Divides player's size by 2
     li
       em: |x 
       |Instant death
